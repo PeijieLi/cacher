@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+    <title>Cachera - Cache And Memory Resource Allocation Simulator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-black.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css">
+
+    <head>
+        <header class="w3-container w3-theme me-padding" id="myHeader">
+        <div class="w3-center">
+            <h4>Cache And Memory Resource Allocation Simulator</h4>
+            <h1 class="w3-xxxlarge w3-animate-bottom">Cachera</h1>
+        </div>
+    </header>
+
+    <body onload="updateIndexToHighlight(-1)">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="button.css">
+    <script type="text/javascript" src="js/main.js"></script>
+
+
+    <div class="row">
+        <div class="column sideleft">
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+            <div class="w3-card" style="min-height:350px">
+                <br>
+                <h2>Cache Configurations</h2>
+                <br><p>Placement Policy: 
+                <select name="cache[]" id="placement" onchange="blkCountUpdate()">
+                <option value="None" selected="true" disabled="disabled">Select</option>
+                <option value=0>Direct Mapped</option>
+                <option value=1>Set Associative</option>
+                <option value=2>Fully Associative</option>
+                </select><br><br>
+
+                Replacement Policy: <select name="cache[]" id="replacement">
+                <option value="None" selected="true" disabled="disabled">Select</option>
+                <option value="LRU">LRU</option><option value="Random">Random</option></select><br><br>
+
+                Number of Blocks: <select name="cache[]", id="blockcount" onchange="blkCountUpdate()">
+                <option value=0 selected="true" disabled="disabled">Select</option>
+                <option value=4>4</option><option value=8>8</option>
+                <option value=16>16</option><option value=32>32</option>
+                <option value=64>64</option><option value=128>128</option>
+                </select><br><br>
+
+                Cache block size (bytes): <select name="cache[]" id="blocksize" onchange="updateCapacity()">
+                <option value=0 selected="true" disabled="disabled">Select</option>
+                <option value=4>4</option><option value=8>8</option>
+                <option value=16>16</option><option value=32>32</option>
+                <option value=64>64</option></select><br><br>
+
+                Set Size (Blocks): <select name="cache[]" id="set">
+                <option value=0  selected="true" disabled="disabled">Select</option>
+                <option value=1>1</option><option value=2>2</option>
+                <option value=4>4</option><option value=8>8</option>
+                <option value=16>16</option><option value=32>32</option>
+                <option value=64>64</option><option value=128>128</option>
+                </select><br><br></p>
+
+                <script>
+                $('#placement').change(function(e){
+                    if($(this).val() == 2){
+                        blkCountUpdate();
+                        document.getElementById("set").disabled=true;
+                    } else if($(this).val() == 0){
+                        $("#set option[value=1]").prop('selected',true);
+                        document.getElementById("set").disabled=true;
+                    } else {
+                        document.getElementById("set").disabled=false;
+                    }});
+                </script>
+                <p id="capacity">Cache Capacity: UnDefined Yet</p>
+
+                
+                <!-- </div> -->
+                <div class="center">
+                    <button id="startbutton" onclick="restartSimulation()">Start Simulation</button><br><br>
+                    <button id="next" onclick="nextStep()">Next Step</button>
+                    <!-- <button onclick="testNext()">TestNextButton</button> -->
+                </div>
+            </div><br><br>
+            <div class="w3-card">
+                <h2 style="text-align:center">Addr. Ref. String</h2><br>
+                <div class="center w3-border" style="width:150px;height:260px;overflow:auto"><p>      </p>     <table class="center" id="stringTable"></table></div>
+                <br><br>
+                <div class="center">
+                    <button onclick="autoGenerateStrings()">Auto Gen. Strings</button><button onclick="enterString()">Self Gen. String</button>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="diagramSpace" class="column middle">
+            <h1 style="text-align:center" id="cache-title"></h1><br>
+            <p id="addressInBinary"></p><br>
+            <h1 id="tioHeader"></h1>
+            <div id="tioTableSpace">
+                <table class="center" style="font-size: 15px;" id="tio_table"></table>
+            </div><br>
+            <h1 id="cacheHeader"></h1>
+            <div id="cacheTableSpace" style="height:250px;width:800px;overflow:auto">
+                <table class="center" id="cacheTable"></table>
+            </div><br>
+            <div class="column third">
+                <p id="hits"></p>
+            </div>
+            <div class="column third">
+            <p id="misses"></p>
+            </div>
+            <div class="column third">
+                <p id="Hit-Rate"></p>
+            </div><br><br><br>
+            <h1 id="logHeader"></h1>
+            <div id="logArea">
+            </div>
+               
+        </div>
+        <div class="column sideright">
+            <h2 id="memoryHeader"></h2>
+            <div class="center" style="width:400px; height: 800px; overflow: auto;">
+                <table class="center" id="memory_table">
+            </div>
+        </div>
+    </body>
+</html>
