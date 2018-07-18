@@ -12,7 +12,7 @@ var cacheBlockSize = -1;
 var cachereplacement = "";
 
 // keep those private
-var prevHighlightMemoryRowIndexStart = -1;
+var prevHighlightMemoryAddress = -1;
 var addressReferenceStrings = [];
 var addressReferenceCounter = -1;
 var Cache_Type = ["Direct Mapped Cache", " Way Set Associative Cache", "Fully Associative Cache"];
@@ -24,19 +24,17 @@ var ishit = false;
 
 // ---------------------------------------------------------------- Part 0: Testing ----------------------------------------
 function testNext() {
-    cacheBlockSize = 8;
-    offsetbits = 3;
+    cacheBlockSize = 16;
+    offsetbits = 4;
 
     cacheSetCount = 1;
     cacheBlockCount = 32;
     indexbits = 5;
 
-    tagbits = 8;
+    tagbits = 7;
     cachereplacement = "Random";
     
     cacheType = 0;
-
-    
     
     SimulationStart = 1;
 
@@ -94,7 +92,7 @@ function restartSimulation() {
         drawMemoryTable(0);
         initLog();
         cleanLog();
-        prevHighlightMemoryRowIndexStart = -1;
+        prevHighlightMemoryAddress = -1;
         addressReferenceStrings = [];
         addressReferenceCounter = -1;
         currAddress = "";
@@ -442,18 +440,18 @@ function searchForBlockToReplace(address) {
     }
     // if random replacement:
     if (cachereplacement == "Random") {
-        var lucky = getRndInteger(0,3);
+        var lucky = getRndInteger(0,cacheSetCount);
         var sadValidCell = document.getElementById("row"+cacheRowIndex.toString()+"set"+lucky.toString()+"valid");
         sadValidCell.style.backgroundColor = "#00FFFF";
 
         var sadTagCell = document.getElementById("row"+cacheRowIndex.toString()+"set"+lucky.toString()+"tag");
         sadTagCell.style.backgroundColor = "#00FFFF";
-        // var sadDirtyCell = document.getElementById("row"+cacheRowIndex.toString()+"set"+lucky.toString()+"dirty");
-        // sadDirtyCell.style.backgroundColor = "#00FFFF";
         var sadDataCell = document.getElementById("row"+cacheRowIndex.toString()+"set"+lucky.toString()+"data");
         sadDataCell.style.backgroundColor = "#00FFFF";
         sadDataCell.scrollIntoView(false); 
+
         return {row: cacheRowIndex, set: lucky};
+
     } else if (cachereplacement == "LRU") {
         for (var i = 0; i < cacheSetCount; i++) {
             var lrucell = document.getElementById("row"+cacheRowIndex.toString()+"set"+i.toString()+"lru");
@@ -487,11 +485,21 @@ function replaceCacheBlock(address) {
     targetCell_tag.innerHTML = address.substring(0, tagbits);
 
     // compute main memory block information
-    var memoryCell_start = document.getElementById("Address"+parseInt(address, 2).toString());
-    var i = parseInt(address, 2)+cacheBlockSize - 2;
-    var memoryCell_end = document.getElementById("Address"+i.toString());
+    var addressStart = parseInt(address, 2) - parseInt(address, 2) % cacheBlockSize;
+    var addressEnd = addressStart + cacheBlockSize - 1;
+    var memoryCell_start = document.getElementById("Address"+addressStart.toString());
+    var memoryCell_end = document.getElementById("Address"+addressEnd.toString());
+
     var targetCell_data = document.getElementById("row"+blockToReplace.row.toString()+"set"+blockToReplace.set.toString()+"data");
-    targetCell_data.innerHTML = memoryCell_start.innerHTML.substring(3, memoryCell_start.innerHTML.length) + "~"+memoryCell_end.innerHTML.substring(3, memoryCell_end.innerHTML.length);// memory data
+
+    var startWord = memoryCell_start.innerHTML.substring(3, memoryCell_start.innerHTML.length);
+    var endWord = memoryCell_end.innerHTML.substring(3, memoryCell_end.innerHTML.length);
+    if (startWord == endWord)
+        targetCell_data.innerHTML = startWord;
+    else
+        targetCell_data.innerHTML = startWord + "~"+endWord;// memory data
+    
+
     if (cachereplacement == "LRU") {
         var targetCell_lru = document.getElementById("row"+blockToReplace.row.toString()+"set"+blockToReplace.set.toString()+"lru");
         var lru_threshold = parseInt(targetCell_lru.innerHTML, 2);
@@ -695,7 +703,7 @@ function drawMemoryTable(startIndex) {
     var header_col3 = headerRow.insertCell(-1);
     var header_col4 = headerRow.insertCell(-1);
     var header_col5 = headerRow.insertCell(-1);
-    header_col1.innerHTML = "Addr";
+    header_col1.innerHTML = "Addr (0x)";
     header_col2.innerHTML = "+0";
     header_col3.innerHTML = "+1";
     header_col4.innerHTML = "+2";
@@ -722,7 +730,7 @@ function drawMemoryTable(startIndex) {
 // highlight memory cells based on target Address and cache block size
 function highlightMemoryRow(targetAddress) {
     if (targetAddress >= 0) {
-        var rowIndexStart = Math.floor(targetAddress / 4);
+        var rowIndexStart = Math.floor((targetAddress - (targetAddress % cacheBlockSize))/ 4);
         var rowIndexEnd = rowIndexStart + cacheBlockSize/4;
         var targetRowStart = document.getElementById("memoryRow"+rowIndexStart.toString());
         var targetRowEnd = document.getElementById("memoryRow"+rowIndexEnd.toString());
@@ -742,17 +750,18 @@ function highlightMemoryRow(targetAddress) {
     }
 
     // clear previous highlighted rows
-    if (prevHighlightMemoryRowIndexStart >= 0) {
-        var prevRowIndexStart = prevHighlightMemoryRowIndexStart;
-        var prevRowIndexEnd = prevHighlightMemoryRowIndexStart + cacheBlockSize/4;
-        for (var j = prevRowIndexStart; j < prevRowIndexEnd; j++) {
+    if (prevHighlightMemoryAddress >= 0) {
+        var prevRowIndexStart = Math.floor((prevHighlightMemoryAddress - (prevHighlightMemoryAddress % cacheBlockSize))/ 4);
+        for (var j = prevRowIndexStart; j < prevRowIndexStart + cacheBlockSize/4; j++) {
             prevRow = document.getElementById("memoryRow"+j.toString());
             if (prevRow)
                 prevRow.style.backgroundColor = "AntiqueWhite";
         }
+        var prevCell = document.getElementById("Address"+prevHighlightMemoryAddress.toString());
+        prevCell.style.backgroundColor = "AntiqueWhite";
     }
-    //update prevHighlightMemoryRowIndexStart
-    prevHighlightMemoryRowIndexStart = rowIndexStart;
+    
+    prevHighlightMemoryAddress = targetAddress;
 }
 
 
