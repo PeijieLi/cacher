@@ -94,6 +94,15 @@ function restartSimulation() {
         drawMemoryTable(0);
         initLog();
         cleanLog();
+        prevHighlightMemoryRowIndexStart = -1;
+        addressReferenceStrings = [];
+        addressReferenceCounter = -1;
+        currAddress = "";
+        hits = 0;
+        misses = 0;
+        ishit = false;
+        simulationStep = 0;
+
         document.getElementById("startbutton").innerHTML = "Start Simulation";
         document.getElementById("addressInBinary").innerHTML = "";
 
