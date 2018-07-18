@@ -594,7 +594,23 @@ function GenerateCacheTable() {
     while(table.rows.length > 0) {
         table.deleteRow(0);
     }
-    var headerRow = table.insertRow(0);
+
+    var blockHeaderRow = table.insertRow(0);
+    var cell = blockHeaderRow.insertCell(-1);
+    for (var j = 0; j < cacheSetCount; j++) {
+        var blockcell = blockHeaderRow.insertCell(-1);
+        if (cachereplacement == "LRU")
+            blockcell.colSpan = "4";
+        else
+            blockcell.colSpan = "3";
+        blockcell.innerHTML = "Set "+j.toString();
+    }
+
+
+
+
+
+    var headerRow = table.insertRow(-1);
     var header_index = headerRow.insertCell(-1);
     header_index.innerHTML = "Index";
     for (var h = 0; h < cacheSetCount; h++) {
